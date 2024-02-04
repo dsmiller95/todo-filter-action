@@ -2,18 +2,26 @@ name: todo-filter-action
 description: Filter through Todos in a project, and output any pending todos to a pull request comment, based on properties of the pull request
 author: Dan Miller <dsmiller95@gmail.com>
 inputs:
-  error:
-    description: 'The error message to display, if any'
+  linked-issues:
+    description: 'Linked issues from the pull request body'
+    required: true
+  root-path:
+    description: 'The root path of the project to search for TODOs'
     required: false
-    default: ''
+    default: '.'
+  file-pattern:
+    description: 'A generic pattern to filter out non-source files (e.g., *.cs)'
+    required: false
+    default: '*.cs'
   token:
     description: 'The GitHub token to use for downloading the action, defaults to workflow token'
     required: true
     default: ${{ github.token }}
+    
 outputs:
-  error:
-    description: 'The description of any error that occurred'
-    value: ${{ steps.run.outputs.error }}
+  todos:
+    description: 'The JSON representation of TODOs found'
+    value: ${{ steps.run.outputs.todos }}
 
 runs:
   using: 'composite'
@@ -53,4 +61,5 @@ runs:
     - name: Run Action
       shell: bash
       id: run
-      run: ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.error }}"
+      run: |
+        ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.linked-issues }}" "${{ inputs.root-path }}" "${{ inputs.file-pattern }}"
